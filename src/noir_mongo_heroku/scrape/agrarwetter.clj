@@ -8,7 +8,7 @@
   (distinct (map text (select res [:td :font.SCHRIFT_FORMULAR_WERTE_MITTE :b]))))
 
 (defn get-occlusion-day [res]
-  (let [current-measures? (not-empty (select x [(text-pred #(.contains % "Wetterzustand"))]))
+  (let [current-measures? (not-empty (select res [(text-pred #(.contains % "Wetterzustand"))]))
         parts (->> (select res [:td :font.SCHRIFT_FORMULAR_WERTE_MITTE])
                 (map text)
                 (drop (if current-measures? 5 0))
