@@ -14,14 +14,14 @@
          (common/layout
            [:p "Welcome to noir-mongo-heroku"]))
 
-(defpage "/cal" []
+(defpage "/cal/:plz" {plz :plz}
   (let [cal (Calendar.)
         _ (doto (.getProperties cal)
             (.add (ProdId. "-//Steffen Dienst//test 1.0//EN"))
             (.add Version/VERSION_2_0)
             (.add CalScale/GREGORIAN))
         now (System/currentTimeMillis)
-        event (doto (VEvent. (Date. now) "kleiner Test genau heute")
+        event (doto (VEvent. (Date. now) (str "kleiner Test genau heute für PLZ " plz))
                 ;(.. getProperties (getProperty Property/DTSTART) getParameters (add Value/DATE))
                 (.. getProperties (add (.generateUid (UidGenerator. "1")))))
         output (net.fortuna.ical4j.data.CalendarOutputter.)
