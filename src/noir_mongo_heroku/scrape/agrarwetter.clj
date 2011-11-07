@@ -5,20 +5,24 @@
 (def retrieve 
   (m/memoize 
     (fn [plz]
-      (do
-        (println "retrieving current weather data from proplanta for zipcode " plz)
-        (html-resource 
-          (java.net.URL. (str "http://www.proplanta.de/Solarwetter/profi-wetter.php?SITEID=60123&PLZ=" plz "&STADT=&WETTERaufrufen=postleitzahl&Wtp=SOLAR&SUCHE=Wetter&wT=0")))))
+      (println "retrieving current weather data from proplanta for zipcode " plz)
+      (let [template (str "http://www.proplanta.de/Solarwetter/profi-wetter.php?SITEID=60123&PLZ=%s&STADT=&WETTERaufrufen=postleitzahl&Wtp=SOLAR&SUCHE=Wetter&wT=%d")
+            url1 (java.net.URL. (format template plz 0))
+            url2 (java.net.URL. (format template plz 4))] 
+        (list (html-resource url1)
+              (html-resource url2))))
     (m/ttl-cache-strategy (* 2 60 60 1000))))
 
 (defn get-dates [res]
   (distinct (map text (select res [:td :font.SCHRIFT_FORMULAR_WERTE_MITTE :b]))))
 
 (def ^:private df (java.text.SimpleDateFormat. "dd.MM.yyyy"))
+
 (defn- date2millis [s]
   (.getTime (.parse df s)))
 
 (def ^:private tf (java.text.SimpleDateFormat. "dd.MM.yyyy HH:mm"))
+
 (defn- time2millis [date time]
   (.getTime (.parse tf (str date " " (subs time 0 5)))))
 
@@ -26,11 +30,12 @@
   (let [current-measures? (not-empty (select res [(text-pred #(.contains % "Wetterzustand"))]))
         parts (->> (select res [:td :font.SCHRIFT_FORMULAR_WERTE_MITTE])
                 (map text)
-                (drop (if current-measures? 5 0))
-                (partition 4))
+                (drop (if current-measures? 5 0)))
+        num-dates (count (take-while #(re-matches #"\d{2}\.\d{2}\.\d{4}[\w]*" %) parts))
+        parts (partition num-dates parts)
         [daily parts] (split-at 3 parts)
         [three-hours sun-times] (split-at 9 parts)]
-    (for [i (range 4) :let [f #(nth % i)
+    (for [i (range num-dates) :let [f #(nth % i)
                             date-str (subs (f (first daily)) 0 10)
                             millis (date2millis date-str)]]
       {:date millis

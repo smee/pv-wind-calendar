@@ -29,15 +29,26 @@
   (doto (VEvent. (DateTime. start) (DateTime. end) text)
     (.. getProperties (add (.generateUid uid-gen)))))
 
+(defn overlaps? [[s1 e1] [s2 e2]]
+  (or (and (> s1 s2) (< s1 e2)) (and (> e1 s2) (< e1 e2))
+      (and (> s2 s1) (< s2 e1)) (and (> e2 s1) (< e2 e1))))
+
 (defn- create-calendar-events [{:keys [sunset date dawn dusk sunrise occlusions relative-sun estimated-gain]}]
-  (concat
-    (vector
-      (create-allday-event date (str "rel. Sonnenscheindauer: " relative-sun))
-      (create-allday-event date (str "Globalstrahlung: " estimated-gain))
-      (create-event dawn sunrise "Dämmerungsanfang bis Sonnenaufgang")
-      (create-event sunset dusk "Sonnenuntergang bis Dämmerungsende"))
-    (for [[[start end] text] occlusions]
-      (create-event start end text))))
+  (let [adjusted-date (+ date (* 60 60 1000))];; XXX prevent mistakes in daylight saving time, midnight of a date plus one hour should be still the same day 
+    ;; TODO use time zone informations!
+    (concat
+      (vector
+        (create-allday-event adjusted-date (str "rel. Sonnenscheindauer: " relative-sun))
+        (create-allday-event adjusted-date (str "Globalstrahlung: " estimated-gain))
+        (create-event dawn sunrise "Dämmerungsanfang bis Sonnenaufgang")
+        (create-event sunset dusk "Sonnenuntergang bis Dämmerungsende"))
+      (for [[[start end] text] occlusions 
+            :when (or (overlaps? [start end] [dawn sunrise])
+                      (overlaps? [start end] [sunset dusk])
+                      (overlaps? [start end] [sunrise sunset]))
+            :let [start (max start sunrise)
+                  end (min end sunset)]]
+        (create-event start end text)))))
 
 (defpage "/cal/:plz" {plz :plz}
   (let [cal (Calendar.)
@@ -46,7 +57,7 @@
             (.add Version/VERSION_2_0)
             (.add CalScale/GREGORIAN))
         now (System/currentTimeMillis)
-        forecasts (wetter/get-forecast (wetter/retrieve plz))
+        forecasts (mapcat wetter/get-forecast (wetter/retrieve plz))
         events (mapcat create-calendar-events forecasts) 
         output (net.fortuna.ical4j.data.CalendarOutputter.)
         buf (java.io.StringWriter.)]
