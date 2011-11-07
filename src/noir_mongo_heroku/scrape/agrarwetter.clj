@@ -2,6 +2,9 @@
   (:use net.cgrand.enlive-html)
   (:require [noir-mongo-heroku.memoize :as m]))
 
+(defn wetternet []
+  (html-resource (java.net.URL. "http://www.wetter.net/47/Berlin"))) 
+
 (def retrieve 
   (m/memoize 
     (fn [plz]

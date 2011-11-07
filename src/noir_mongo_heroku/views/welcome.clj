@@ -65,3 +65,5 @@
     (.output output cal buf)
     (str buf)
     ))
+(defpage "/wetternet" []
+        (apply str (wetter/wetternet))) 
