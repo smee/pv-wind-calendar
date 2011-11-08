@@ -50,4 +50,13 @@
        :dusk (->> 4 (nth sun-times) f (time2millis date-str))
        :occlusions (zipmap (map #(vector (+ millis (* % 60 60 1000))
                                          (+ millis (* (+ 3 %) 60 60 1000))) (range 0 24 3)) 
-                           (map f (rest three-hours)))})))
+                            (map f (rest three-hours)))})))
+(defn wetternet [res]
+  (let [hourly-data (select res [(attr-starts :id "prognose_")])
+        times (select h [:div.zeit_inner :span text])
+        labels-fn #(select % [:span.werte_headline text])
+        values-fn #(select % [:span.werte_daten text])
+        labels (map labels-fn hourly-data)
+        values (map values-fn hourly-data)]
+   (zipmap times (map zipmap labels values))))
+
