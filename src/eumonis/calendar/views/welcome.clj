@@ -27,21 +27,19 @@
       (and (> s2 s1) (< s2 e1)) (and (> e2 s1) (< e2 e1))))
 
 (defn- create-solar-events [{:keys [sunset date dawn dusk sunrise occlusions relative-sun estimated-gain]}]
-  (let [adjusted-date (+ date (* 60 60 1000))];; XXX prevent mistakes in daylight saving time, midnight of a date plus one hour should be still the same day 
-    ;; TODO use time zone informations!
     (concat
       (vector
-        (ical/create-allday-event adjusted-date (str "rel. Sonnenscheindauer: " relative-sun))
-        (ical/create-allday-event adjusted-date (str "Globalstrahlung: " estimated-gain))
+        (ical/create-allday-event date (str "rel. Sonnenscheindauer: " relative-sun))
+        (ical/create-allday-event date (str "Globalstrahlung: " estimated-gain))
         (ical/create-event dawn sunrise "Dämmerungsanfang bis Sonnenaufgang")
         (ical/create-event sunset dusk "Sonnenuntergang bis Dämmerungsende"))
-      (for [[[start end] text] occlusions 
+      (for [[[start end] text] (sort-by ffirst occlusions) 
             :when (or (overlaps? [start end] [dawn sunrise])
                       (overlaps? [start end] [sunset dusk])
                       (overlaps? [start end] [sunrise sunset]))
             :let [start (max start sunrise)
                   end (min end sunset)]]
-        (ical/create-event start end text)))))
+        (ical/create-event start end text))))
 
 (defpage "/solar/:plz" {plz :plz}
   (let [forecasts (sc/get-solar-forecast plz)
@@ -51,8 +49,8 @@
 ;;;;;;;;;;;;;;;;; wind forecast ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- create-wind-events [m]
-  (let [time-diff (- (second (keys m)) (first (keys m)))]
-    (for [[t entries] m
+  (let [time-diff (Math/abs (- (second (keys m)) (first (keys m))))]
+    (for [[t entries] (sort-by first (seq m))
           :let [text (format "%s aus %s (Böen bis %s)" 
                              (entries "Mittlere Windgeschw.") 
                              (entries "Windrichtung") 

@@ -6,14 +6,19 @@
            net.fortuna.ical4j.util.UidGenerator))
 
 (def ^:private uid-gen (UidGenerator. "1"))
+(def ^:private local-tz (.getTimeZone (.createRegistry (net.fortuna.ical4j.model.TimeZoneRegistryFactory/getInstance))
+                                      "Europe/Berlin"))
 
 (defn create-allday-event [date text]
-  (doto (VEvent. (Date. date) text)
-    (.. getProperties (add (.generateUid uid-gen)))))
+  (let [adjusted-date (+ date (* 60 60 1000))] ;; XXX prevent mistakes in daylight saving time, midnight of a date plus one hour should be still the same day
+    (doto (VEvent. (Date. adjusted-date) text)
+      (.. getProperties (add (.generateUid uid-gen))))))
 
 (defn create-event [start end text]
-  (doto (VEvent. (DateTime. start) (DateTime. end) text)
-    (.. getProperties (add (.generateUid uid-gen)))))
+  (let [start (doto (DateTime. start) (.setTimeZone local-tz))
+        end (doto (DateTime. end) (.setTimeZone local-tz))] 
+    (doto (VEvent. start end text)
+      (.. getProperties (add (.generateUid uid-gen))))))
 
 
 (defn create-icalendar [events]
