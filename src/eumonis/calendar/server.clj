@@ -1,5 +1,6 @@
 (ns eumonis.calendar.server
-  (:require [noir.server :as server]))
+  (:require [noir.server :as server])
+  (:gen-class))
 
 (server/load-views "src/eumonis/calendar/views/")
 
