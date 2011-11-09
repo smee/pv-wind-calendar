@@ -43,7 +43,7 @@
 (defpage "/solar/:plz" {plz :plz}
   (let [forecasts (sc/get-solar-forecast plz)
         events (mapcat create-solar-events forecasts)]
-    (content-type "text/calendar" (ical/create-icalendar events))))
+    (content-type "text/calendar; charset=utf-8" (ical/create-icalendar events))))
 
 ;;;;;;;;;;;;;;;;; wind forecast ;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -60,4 +60,4 @@
 (defpage "/wind/:plz" {plz :plz}
   (let [forecasts (sc/get-wind-forecast plz)
         events (mapcat create-wind-events forecasts)]
-    (content-type "text/calendar" (ical/create-icalendar events)))) 
+    (content-type "text/calendar; charset=utf-8" (ical/create-icalendar events)))) 
