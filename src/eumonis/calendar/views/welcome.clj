@@ -16,6 +16,9 @@
          (common/layout
            [:p "Please direct your calendar application to /cal/zipcode where zipcode is your local zipcode, for example see " [:a {:href "/solar/04155"} "this link"]]))
 
+(defpage "/huhu" []
+  "huhu")
+
 ;;;;;;;;;;;;;;;;; solar forecast ;;;;;;;;;;;;;;;;;;;;;;;;
 (defn overlaps? 
   "Do the numeric intervals overlap each other in any way?"
