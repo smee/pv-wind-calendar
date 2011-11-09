@@ -7,7 +7,7 @@
   (:use noir.core
         hiccup.core
         hiccup.page-helpers
-        [noir.response :only (redirect)]))
+        [noir.response :only (redirect content-type)]))
 
 (defpage "/" []
   (redirect "/welcome"))
@@ -43,7 +43,7 @@
 (defpage "/solar/:plz" {plz :plz}
   (let [forecasts (sc/get-solar-forecast plz)
         events (mapcat create-solar-events forecasts)]
-    (ical/create-icalendar events)))
+    (content-type "text/calendar" (ical/create-icalendar events))))
 
 ;;;;;;;;;;;;;;;;; wind forecast ;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -60,4 +60,4 @@
 (defpage "/wind/:plz" {plz :plz}
   (let [forecasts (sc/get-wind-forecast plz)
         events (mapcat create-wind-events forecasts)]
-    (ical/create-icalendar events))) 
+    (content-type "text/calendar" (ical/create-icalendar events)))) 
