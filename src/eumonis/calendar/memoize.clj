@@ -1,5 +1,5 @@
 (ns ^{:author "Meikel Brandmeyer" :doc "see http://kotka.de/blog/2010/03/memoize_done_right.html"} 
-     noir-mongo-heroku.memoize
+     eumonis.calendar.memoize
   (:refer-clojure :exclude [memoize]))
 
 (defprotocol PCachingStrategy
