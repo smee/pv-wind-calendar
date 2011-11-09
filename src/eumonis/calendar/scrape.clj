@@ -1,17 +1,26 @@
 (ns eumonis.calendar.scrape
   (:use net.cgrand.enlive-html)
   (:require [eumonis.calendar.memoize :as m])
-  (:import java.util.Calendar
-           java.net.URL))
+  (:import java.util.Calendar))
+
+;;;;;;;;;;;;;; fetch urls using chrome user agent ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmulti fetch-url "Create an inputstream for different types of urls." class)
+
+(defmethod fetch-url java.lang.String [url]
+  (fetch-url (java.net.URL. url)))
+
+(defmethod fetch-url java.net.URL [url]
+  (let [conn (doto (.openConnection url)
+               (.addRequestProperty "User-Agent" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko)"))]
+    (.getInputStream conn)))
 
 ;;;;;;;;;;;;;; parse solar wheather from proplanta.de/Solarwetter ;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- retrieve-agrarwetter [plz-or-city]
   (println "retrieving current solar weather data from proplanta for zipcode/city " plz-or-city)
-  (let [template (str "http://www.proplanta.de/Solarwetter/profi-wetter.php?SITEID=60123&PLZ=%s&STADT=&WETTERaufrufen=postleitzahl&Wtp=SOLAR&SUCHE=Wetter&wT=%d")
-        url1 (URL. (format template plz-or-city 0))
-        url2 (URL. (format template plz-or-city 4))] 
-    (list (html-resource url1)
-          (html-resource url2))))
+  (let [template (str "http://www.proplanta.de/Solarwetter/profi-wetter.php?SITEID=60123&PLZ=%s&STADT=&WETTERaufrufen=postleitzahl&Wtp=SOLAR&SUCHE=Wetter&wT=%d")] 
+    (list (html-resource (fetch-url (format template plz-or-city 0)))
+          (html-resource (fetch-url (format template plz-or-city 4))))))
 
 (def ^:private tf (java.text.SimpleDateFormat. "dd.MM.yyyy HH:mm"))
 
@@ -73,15 +82,16 @@
 
 (defn get-wind-forecast [plz-or-city]
   (let [main-url (str "http://www.wetter.net/cgi-bin/wetter-net3/wetter-stadt.pl?NAME=" plz-or-city)
-        main-res (html-resource (URL. main-url))
+        main-res (html-resource (fetch-url main-url))
         detail-links (->> [:div.wetterwerte_vue :div.details_unten ] 
                        (select main-res)
                        (map #(-> % :attrs :onclick))
                        (map #(subs % (count "location.href='") (dec (count %)))))
         today-midnight (get-midnight)
-        detail-res (map #(html-resource (URL. %)) detail-links)
+        detail-res (map #(html-resource (fetch-url %)) detail-links)
         details (map #(wetternet-details % (+ today-midnight (* %2 24 60 60 1000))) detail-res (range (count detail-res)))
         ]
+    (println main-res)
     details)) 
 
 
