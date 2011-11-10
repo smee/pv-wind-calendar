@@ -13,8 +13,10 @@
   (redirect "/welcome"))
 
 (defpage "/welcome" []
-         (common/layout
-           [:p "Please direct your calendar application to /cal/zipcode where zipcode is your local zipcode, for example see " [:a {:href "/solar/04155"} "this link"]]))
+  (common/layout
+    ;; TODO to prepend the context root (base url) wrap the (url-for...) form in a (hiccup.core/resolve-url ...)
+    ;; but: defpage ignores the base-url, so it won't work at all :(
+    [:p "Please direct your calendar application to /cal/zipcode where zipcode is your local zipcode, for example see " [:a {:href (url-for solar {:plz "04155"})} "this link"]]))
 
 (defpage "/huhu" []
   "huhu")
@@ -41,7 +43,7 @@
                   end (min end sunset)]]
         (ical/create-event start end text))))
 
-(defpage "/solar/:plz" {plz :plz}
+(defpage solar "/solar/:plz" {plz :plz}
   (let [forecasts (sc/get-solar-forecast plz)
         events (mapcat create-solar-events forecasts)]
     (content-type "text/calendar; charset=utf-8" (ical/create-icalendar events))))
