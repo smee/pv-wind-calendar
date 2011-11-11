@@ -25,8 +25,8 @@
 (defn overlaps? 
   "Do the numeric intervals overlap each other in any way?"
   [[s1 e1] [s2 e2]]
-  (or (and (> s1 s2) (< s1 e2)) (and (> e1 s2) (< e1 e2))
-      (and (> s2 s1) (< s2 e1)) (and (> e2 s1) (< e2 e1))))
+  (or (< s2 s1 e2) (< s2 e1 e2)
+      (< s1 s2 e1) (< s1 e2 e1)))
 
 (defn- create-solar-events [{:keys [sunset date dawn dusk sunrise occlusions relative-sun estimated-gain]}]
     (concat
