@@ -3,6 +3,7 @@
              [scrape :as sc]
              [icalendar :as ical]]
             [eumonis.calendar.views.common :as common]
+            [noir.options :as opt]
             )
   (:use noir.core
         hiccup.core
@@ -10,13 +11,14 @@
         [noir.response :only (redirect content-type)]))
 
 (defpage "/" []
-  (redirect "/welcome"))
+  (redirect (url-for welcome)))
 
-(defpage "/welcome" []
+(defpage welcome "/welcome" []
   (common/layout
     ;; TODO to prepend the context root (base url) wrap the (url-for...) form in a (hiccup.core/resolve-url ...)
     ;; but: defpage ignores the base-url, so it won't work at all :(
-    [:p "Please direct your calendar application to /cal/zipcode where zipcode is your local zipcode, for example see " [:a {:href (url-for solar {:plz "04155"})} "this link"]]))
+    [:p "Please direct your calendar application to /cal/zipcode where zipcode is your local zipcode, for example see " [:a {:href (opt/resolve-url (url-for solar {:plz "04155"}))} "this link"]]))
+
 
 (defpage "/huhu" []
   "huhu")

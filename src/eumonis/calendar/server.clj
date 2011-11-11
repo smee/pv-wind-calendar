@@ -15,10 +15,10 @@
         port (Integer. (get (System/getenv) "PORT" "8080"))]
     (server/start port {:mode mode
                         :ns 'eumonis.calendar
-                        ;:base-url "eumonis-calendar/"
+                        :base-url "/eumonis-calendar"
                         })))
 
 (def handler (server/gen-handler {:mode :dev
                                   :ns 'eumonis.calendar
-                                  :base-url "eumonis-calendar"}))
+                                  :base-url "/eumonis-calendar"}))
 

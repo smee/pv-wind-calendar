@@ -91,7 +91,6 @@
         detail-res (map #(html-resource (fetch-url %)) detail-links)
         details (map #(wetternet-details % (+ today-midnight (* %2 24 60 60 1000))) detail-res (range (count detail-res)))
         ]
-    (println main-res)
     details)) 
 
 
