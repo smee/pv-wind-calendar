@@ -17,7 +17,6 @@
 
 ;;;;;;;;;;;;;; parse solar wheather from proplanta.de/Solarwetter ;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- retrieve-agrarwetter [plz-or-city]
-  (println "retrieving current solar weather data from proplanta for zipcode/city " plz-or-city)
   (let [template (str "http://www.proplanta.de/Solarwetter/profi-wetter.php?SITEID=60123&PLZ=%s&STADT=&WETTERaufrufen=postleitzahl&Wtp=SOLAR&SUCHE=Wetter&wT=%d")] 
     (list (html-resource (fetch-url (format template plz-or-city 0)))
           (html-resource (fetch-url (format template plz-or-city 4))))))
