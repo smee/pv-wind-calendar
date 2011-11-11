@@ -1,6 +1,6 @@
 (ns eumonis.calendar.scrape
   (:use net.cgrand.enlive-html)
-  (:require [eumonis.calendar.memoize :as m])
+  (:require [clj-cache.cache :as cache])
   (:import java.util.Calendar))
 
 ;;;;;;;;;;;;;; fetch urls using chrome user agent ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,7 +52,9 @@
                                          (+ millis (* (+ 3 %) 60 60 1000))) (range 0 24 3)) 
                            (map f (rest three-hours)))})))
 
-(defn get-solar-forecast [plz-or-city] 
+(cache/defn-cached get-solar-forecast 
+  (cache/ttl-cache-strategy (* 3 60 60 1000))
+  [plz-or-city] 
   (mapcat extract-agrarwetter (retrieve-agrarwetter plz-or-city)))
 
 ;;;;;;;;;;;;;; parse wheather from wetter.net ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,7 +82,10 @@
                (.set Calendar/MILLISECOND 0))]
      (.getTimeInMillis cal)))
 
-(defn get-wind-forecast [plz-or-city]
+
+(cache/defn-cached get-wind-forecast 
+  (cache/ttl-cache-strategy (* 3 60 60 1000))
+  [plz-or-city]
   (let [main-url (str "http://www.wetter.net/cgi-bin/wetter-net3/wetter-stadt.pl?NAME=" plz-or-city)
         main-res (html-resource (fetch-url main-url))
         detail-links (->> [:div.wetterwerte_vue :div.details_unten ] 
@@ -94,9 +99,5 @@
     details)) 
 
 
-;; cache extracted solar forecast for 3 hours
-(alter-var-root #'get-solar-forecast m/memoize (m/ttl-cache-strategy (* 3 60 60 1000)))
-;; cache extracted wind forecast for 3 hours
-(alter-var-root #'get-wind-forecast m/memoize (m/ttl-cache-strategy (* 3 60 60 1000)))
 
 

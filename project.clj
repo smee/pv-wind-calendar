@@ -4,7 +4,8 @@
             :dependencies [[org.clojure/clojure "1.3.0"]
                            [noir "1.2.1"]
                            [org.mnode.ical4j/ical4j "1.0.2"]
-                           [org.clojars.sritchie09/enlive "1.2.0-alpha1"]]
+                           [org.clojars.sritchie09/enlive "1.2.0-alpha1"]
+                           [clj-cache "0.0.4"]]
             :main eumonis.calendar.server
             :ring {:handler eumonis.calendar.server/handler})
 
