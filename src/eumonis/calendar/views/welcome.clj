@@ -4,6 +4,7 @@
              [icalendar :as ical]]
             [eumonis.calendar.views.common :as common]
             [noir.options :as opt]
+            [clj-cache.cache :as cache]
             )
   (:use noir.core
         hiccup.core
@@ -62,7 +63,15 @@
       (ical/create-event t (+ t time-diff) text)))
   )
 
-(defpage "/wind/:plz" {plz :plz}
+(defpage wind "/wind/:plz" {plz :plz}
   (let [forecasts (sc/get-wind-forecast plz)
         events (mapcat create-wind-events forecasts)]
     (content-type "text/calendar; charset=utf-8" (ical/create-icalendar events)))) 
+
+(defpage "/topsecret/reset-wind-cache" []
+  (cache/invalidate-cache sc/get-wind-forecast)
+  "Done.")
+
+(defpage "/topsecret/reset-solar-cache" []
+  (cache/invalidate-cache sc/get-solar-forecast)
+  "Done.")
