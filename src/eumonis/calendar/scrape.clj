@@ -29,7 +29,7 @@
 (defn- extract-agrarwetter [res]
   (let [df (java.text.SimpleDateFormat. "dd.MM.yyyy")
         measures-avail? (not-empty (select res [(text-pred #(.contains % "Wetterzustand"))]))
-        parts (->> (select res [:td :font.SCHRIFT_FORMULAR_WERTE_MITTE])
+        parts (->> (select res [:td :span.SCHRIFT_FORMULAR_WERTE_MITTE])
                 (map text)
                 (drop (if measures-avail? 5 0)))
         num-dates (count (take-while #(re-matches #"\d{2}\.\d{2}\.\d{4}[\w]*" %) parts))
